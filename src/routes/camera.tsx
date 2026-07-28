@@ -454,11 +454,23 @@ function CameraRoute() {
         {!isRecording && (
           <div className="relative flex items-center justify-between px-5 pt-6 z-10 animate-in fade-in">
             <button
-              onClick={() => previewUrl ? handleRetake() : navigate({ to: isChallengeMode ? "/challenge-detail" : "/party", search: { challengeId } })}
-              className="grid h-10 w-10 place-items-center rounded-full bg-black/40 backdrop-blur text-white"
-            >
-              <X size={18} />
-            </button>
+            onClick={() => {
+              if (previewUrl) {
+                handleRetake();
+              } else {
+                // Si venimos de otra pantalla, volvemos atrás en el historial. 
+                // Si no hay historial previo, por seguridad le mandamos a la home o party.
+                if (window.history.length > 1) {
+                  window.history.back();
+                } else {
+                  navigate({ to: "/dashboard" });
+                }
+              }
+            }}
+            className="grid h-10 w-10 place-items-center rounded-full bg-black/40 backdrop-blur text-white transition active:scale-95"
+          >
+            <X size={18} />
+          </button>
             
             <div className={`glass rounded-full px-3 py-1 text-[11px] uppercase tracking-widest text-white ${isChallengeMode ? "!bg-destructive/80 border border-destructive/50" : ""}`}>
               {isChallengeMode ? `Reto: ${challengeTitle?.slice(0, 15) || "Activo"}...` : groupInfo?.isLiveMode ? "Freestyle - Live" : "Freestyle"}
