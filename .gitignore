@@ -1,3 +1,8 @@
+# Environment files
+.env
+.env.*
+*.local
+
 # Logs
 logs
 *.log
@@ -14,7 +19,6 @@ dist-ssr
 .vinxi
 .tanstack/**
 .nitro
-*.local
 
 # Wrangler / Cloudflare
 .wrangler/
