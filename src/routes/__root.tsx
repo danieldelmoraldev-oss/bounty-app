@@ -73,8 +73,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      // BLOQUEAMOS EL ZOOM Y FORZAMOS PANTALLA COMPLETA
+      { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" },
       { name: "theme-color", content: "#0A0A0F" },
+      
+      // --- ETIQUETAS MÁGICAS PWA (APP NATIVA) ---
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "Bounty" },
+      // ------------------------------------------
+
       { title: "Bounty — La liga secreta de tu grupo" },
       {
         name: "description",
@@ -96,6 +105,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "stylesheet", href: appCss },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      
+      // --- ENLACES AL MANIFEST Y AL ICONO (APP NATIVA) ---
+      { rel: "manifest", href: "/manifest.json" },
+      { rel: "apple-touch-icon", href: "/icon-192x192.png" },
     ],
   }),
   shellComponent: RootShell,
@@ -108,6 +121,15 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="es" className="dark">
       <head>
+        {/* --- ETIQUETAS PWA FORZADAS PARA IOS --- */}
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Bounty" />
+        <link rel="apple-touch-icon" href="/icon-192x192.png" />
+        <link rel="manifest" href="/manifest.json" />
+        {/* --------------------------------------- */}
+        
         <HeadContent />
       </head>
       <body>
