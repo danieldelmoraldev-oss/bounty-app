@@ -4,6 +4,7 @@ import { Notification } from "@/db/models/Notification";
 import { Group } from "@/db/models/Group";
 import { mockGetNotifications } from "@/db/mock-store";
 import { Member } from "@/db/models/Member";
+import { sendPushNotification } from "@/api/onesignal.server"; // AÑADIR IMPORT
 
 let mongoAvailable: boolean | null = null;
 async function isMongoAvailable(): Promise<boolean> {
@@ -98,6 +99,13 @@ export const pokeAdmin = createServerFn({ method: "POST" })
       action: "te ha dado un toque para que empieces la noche",
       target: "¡Dale al botón!",
     });
+
+    // NUEVO: Disparamos la notificación real al teléfono del admin
+    await sendPushNotification(
+      admin._id.toString(),
+      "¡Toque recibido!",
+      `${sender.name} te ha dado un toque para que empieces la noche. ¡Dale al botón!`
+    );
 
     return { success: true };
   });

@@ -3,6 +3,7 @@ import { connectDB } from "@/db/client";
 import { Member } from "@/db/models/Member";
 import { Purchase } from "@/db/models/Purchase";
 import { Notification } from "@/db/models/Notification";
+import { sendPushNotification } from "@/api/onesignal.server";
 
 let mongoAvailable: boolean | null = null;
 async function isMongoAvailable(): Promise<boolean> {
@@ -86,7 +87,7 @@ export const launchSabotage = createServerFn({ method: "POST" })
     
     await purchase.save();
 
-    // Notificamos a todo el grupo del salseo
+   // Notificamos a todo el grupo del salseo (En la BD)
     await Notification.create({
       groupId: data.groupId,
       memberId: victim._id,
@@ -96,6 +97,13 @@ export const launchSabotage = createServerFn({ method: "POST" })
       target: victim.name,
       read: false,
     });
+
+    // NUEVO: Disparamos la notificación real al teléfono de la víctima
+    await sendPushNotification(
+      victim._id.toString(),
+      "¡Sabotaje inminente! ☠️",
+      `${attacker.name} te ha tirado "${purchase.itemName}".`
+    );
 
     return { success: true, itemName: purchase.itemName, victimName: victim.name };
   });

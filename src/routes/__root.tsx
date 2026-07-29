@@ -13,6 +13,7 @@ import OneSignal from 'react-onesignal';
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner"; // <-- Importamos el componente de las burbujas
+import { getStoredMemberId } from "@/hooks/use-auth"; // Asegúrate de importar tu hook
 
 function NotFoundComponent() {
   return (
@@ -145,20 +146,25 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   // --- INICIO DE ONESIGNAL ---
-  useEffect(() => {
-    const runOneSignal = async () => {
-      await OneSignal.init({
-        appId: "86c33f1d-ffe5-41bf-9d2c-73b265307954", // Tu App ID
-        allowLocalhostAsSecureOrigin: true,
-      });
-      
-      // Esto lanza la petición de permiso al usuario
-      OneSignal.Slidedown.promptPush();
-    };
+useEffect(() => {
+  const runOneSignal = async () => {
+    await OneSignal.init({
+      appId: "86c33f1d-ffe5-41bf-9d2c-73b265307954",
+      allowLocalhostAsSecureOrigin: true,
+    });
     
-    runOneSignal();
-  }, []);
-  // --- FIN DE ONESIGNAL ---
+    OneSignal.Slidedown.promptPush();
+
+    // NUEVO: Le decimos a OneSignal quién es este dispositivo
+    const memberId = getStoredMemberId();
+    if (memberId) {
+      OneSignal.login(memberId);
+    }
+  };
+  
+  runOneSignal();
+}, []);
+// --- FIN DE ONESIGNAL ---
 
   return (
     <QueryClientProvider client={queryClient}>

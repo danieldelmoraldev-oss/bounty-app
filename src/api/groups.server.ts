@@ -7,6 +7,7 @@ import { Challenge } from "@/db/models/Challenge";
 import { Event } from "@/db/models/Event";
 import { ShopItem } from "@/db/models/ShopItem";
 import { Notification } from "@/db/models/Notification";
+import { sendPushNotification } from "@/api/onesignal.server";
 import {
   mockCreateGroup,
   mockJoinGroup,
@@ -226,6 +227,15 @@ export const getGroupInfo = createServerFn({ method: "GET" })
         }));
         await Notification.insertMany(notificationsToInsert);
 
+        // --- NUEVO ONESIGNAL: Push Masivo por cierre automático ---
+        for (const m of allMembers) {
+          await sendPushNotification(
+            m._id.toString(),
+            "Noche cerrada automáticamente 🌙",
+            "El sistema ha cerrado la noche por límite de tiempo. ¡Entra para juzgar los retos de los demás!"
+          );
+        }
+
         // 4. Anulamos el evento activo para que la UI sepa que ya terminó
         activeEvent = null;
       }
@@ -392,8 +402,20 @@ export const endNight = createServerFn({ method: "POST" })
       read: false
     }));
     
-    // Importante: asegúrate de tener Notification importado arriba del todo en este archivo
+    /// Importante: asegúrate de tener Notification importado arriba del todo en este archivo
     await Notification.insertMany(notificationsToInsert);
+
+    // --- NUEVO ONESIGNAL: Push Masivo por cierre manual ---
+    for (const m of allMembers) {
+      // No hace falta avisar al propio admin que acaba de darle al botón
+      if (m._id.toString() !== data.memberId) {
+        await sendPushNotification(
+          m._id.toString(),
+          "¡Se acabó la noche! 🏁",
+          `${member.name} ha cerrado la noche. ¡Toca juzgar los retos pendientes!`
+        );
+      }
+    }
 
     return { success: true, eventId: activeEvent._id.toString() };
   });

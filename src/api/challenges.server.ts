@@ -7,6 +7,7 @@ import { Notification } from "@/db/models/Notification";
 import { Event } from "@/db/models/Event"; 
 import { Media } from "@/db/models/Media"; 
 import { Purchase } from "@/db/models/Purchase"; // <-- NUEVO: Importamos el inventario
+import { sendPushNotification } from "@/api/onesignal.server";
 import {
   mockGetMemberChallenges,
   mockGetChallengeDetail,
@@ -183,6 +184,16 @@ export const submitChallenge = createServerFn({ method: "POST" })
       target: challenge.title,
     });
 
+    // --- NUEVO ONESIGNAL: Avisar al Admin ---
+    const admin = await Member.findOne({ groupId: challenge.groupId, isAdmin: true });
+    if (admin && admin._id.toString() !== data.memberId) {
+      await sendPushNotification(
+        admin._id.toString(),
+        "¡Nuevo reto completado! 📸",
+        `${member?.name || "Alguien"} ha subido prueba para: ${challenge.title}. ¡Vete a validarlo!`
+      );
+    }
+
     return { success: true, status: "done" };
   });
 
@@ -239,6 +250,12 @@ export const validateChallenge = createServerFn({ method: "POST" })
         action: "rechazó tu reto",
         target: challenge.title,
       });
+      // --- NUEVO ONESIGNAL: Avisar al usuario (Rechazado) ---
+      await sendPushNotification(
+        challenge.assignedTo.toString(),
+        "Reto Rechazado ❌",
+        `${admin.name} no se ha creído tu prueba: ${challenge.title}. Tendrás que repetirlo.`
+      );
     }
 
     return { success: true, status: challenge.status };
@@ -447,6 +464,12 @@ export const dislikeChallenge = createServerFn({ method: "POST" })
          action: "tumbó tu prueba fake de",
          target: challenge.title,
        });
+       // --- NUEVO ONESIGNAL: Avisar al usuario cazado ---
+       await sendPushNotification(
+         challenge.assignedTo.toString(),
+         "¡Cazada! 🚨",
+         `El grupo ha tumbado tu prueba fake de "${challenge.title}". Puntos restados.`
+       );
        
        return { success: true, revoked: true };
     }
