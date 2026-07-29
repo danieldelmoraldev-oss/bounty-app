@@ -167,12 +167,7 @@ function Recap() {
         onClick={handleScreenClick}
       >
         
-        {mediaList.length === 0 ? (
-          <div className="absolute inset-0 bg-zinc-900 flex flex-col items-center justify-center px-8 text-center text-white/50">
-            <span className="mb-3 text-4xl">📸</span>
-            <span className="text-sm">Aún no hay fotos ni vídeos en este álbum.</span>
-          </div>
-        ) : currentPhoto && currentPhoto.url ? (
+        {currentPhoto && currentPhoto.url ? (
           isVideo(currentPhoto.url) ? (
             <video
               ref={videoRef}

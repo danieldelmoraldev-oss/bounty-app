@@ -37,7 +37,6 @@ function NightRecap() {
       localStorage.setItem(`recap_watched_${eventId}`, "true");
     }
   }, [eventId]);
-  
 
   const { data: detail, isLoading } = useQuery({
     queryKey: ["eventDetail", eventId],
@@ -79,13 +78,6 @@ function NightRecap() {
   });
 
   const currentPhoto = mediaList[currentIndex];
-  // --- NUEVO: Si no hay media, lo mandamos fuera directamente ---
-  useEffect(() => {
-    if (!isLoading && detail && mediaList.length === 0) {
-      toast.info("La noche acabó sin contenido para juzgar.");
-      navigate({ to: "/dashboard" });
-    }
-  }, [isLoading, detail, mediaList.length, navigate]);
 
   // --- NUEVO: Controlar la pausa del vídeo al mantener pulsado ---
   useEffect(() => {

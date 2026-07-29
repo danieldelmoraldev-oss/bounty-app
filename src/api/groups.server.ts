@@ -250,17 +250,7 @@ export const getGroupInfo = createServerFn({ method: "GET" })
       endedAt: { $gte: fourteenHoursAgo }
     }).sort({ endedAt: -1 });
 
-    let pendingRecapEventId = null;
-
-    if (lastEndedEvent) {
-      // NUEVO: Solo activamos el botón si realmente hay fotos en la BD
-      const { Media } = await import("@/db/models/Media");
-      const mediaCount = await Media.countDocuments({ eventId: lastEndedEvent._id });
-      
-      if (mediaCount > 0) {
-        pendingRecapEventId = lastEndedEvent._id.toString();
-      }
-    }
+    const pendingRecapEventId = lastEndedEvent ? lastEndedEvent._id.toString() : null;
     // ----------------------------------------------------------------
 
     return {
