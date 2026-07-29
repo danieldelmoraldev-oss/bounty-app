@@ -9,6 +9,7 @@ import { User, Bell, Shield, LogOut, ChevronRight, Camera, Copy, Check, Crown, A
 import QRCode from "react-qr-code";
 import { avatarOptions, type AvatarOption } from "@/data/avatars";
 import { getMemberProfile, updateProfile } from "@/api/members.server";
+import { toast } from "sonner"; // Añadido para el feedback del botón
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -49,6 +50,52 @@ function SettingsPage() {
   const [selectedFrame, setSelectedFrame] = useState<string>("none");
   const [selectedTitle, setSelectedTitle] = useState<string>("");
   const [copied, setCopied] = useState(false);
+  
+  // --- NUEVO: Estado para OneSignal ---
+  const [pushEnabled, setPushEnabled] = useState(false);
+
+  // Efecto para leer el estado real de OneSignal
+  useEffect(() => {
+    const initOneSignalState = () => {
+      const OneSignal = (window as any).OneSignal;
+      if (OneSignal && OneSignal.User && OneSignal.User.PushSubscription) {
+        // Leemos si el usuario tiene las notificaciones activadas
+        setPushEnabled(OneSignal.User.PushSubscription.optedIn);
+        
+        // Escuchamos si las cambia desde otro sitio (ej: los ajustes del propio móvil)
+        OneSignal.User.PushSubscription.addEventListener("change", (event: any) => {
+          setPushEnabled(event.current.optedIn);
+        });
+      }
+    };
+
+    initOneSignalState();
+    // Le damos un pequeño margen por si OneSignal tarda unos milisegundos más en inyectarse
+    setTimeout(initOneSignalState, 500);
+  }, []);
+
+  // Función para apagar/encender notificaciones
+  const toggleNotifications = async () => {
+    const OneSignal = (window as any).OneSignal;
+    if (!OneSignal || !OneSignal.User) {
+      toast.error("El sistema de notificaciones está cargando, inténtalo en un segundo.");
+      return;
+    }
+
+    try {
+      if (pushEnabled) {
+        await OneSignal.User.PushSubscription.optOut();
+        setPushEnabled(false);
+        toast.info("Notificaciones silenciadas");
+      } else {
+        await OneSignal.User.PushSubscription.optIn();
+        setPushEnabled(true);
+        toast.success("Notificaciones reactivadas");
+      }
+    } catch (error) {
+      toast.error("No se ha podido cambiar el estado de las notificaciones.");
+    }
+  };
 
   // Cuando el perfil cargue, seteamos los cosméticos que ya lleva puestos
   useEffect(() => {
@@ -255,31 +302,30 @@ function SettingsPage() {
 
         {/* --- Options --- */}
         <div className="mt-4 space-y-2">
-          <div className="flex items-center justify-between rounded-[28px] bg-card p-5 hairline opacity-50 grayscale">
+          
+          {/* Botón interactivo de notificaciones */}
+          <button 
+            onClick={toggleNotifications}
+            className="flex w-full items-center justify-between rounded-[28px] bg-card p-5 hairline transition active:scale-95"
+          >
             <div className="flex items-center gap-3">
-              <div className="grid h-10 w-10 place-items-center rounded-full bg-white/5">
-                <Bell size={18} />
+              <div className={`grid h-10 w-10 place-items-center rounded-full transition-colors duration-300 ${pushEnabled ? 'bg-primary/20 text-primary' : 'bg-white/5 text-muted-foreground'}`}>
+                <Bell size={18} className={pushEnabled ? "animate-pulse" : ""} />
               </div>
-              <div>
+              <div className="text-left">
                 <div className="text-sm font-medium">Notificaciones</div>
-                <div className="text-xs text-muted-foreground">Activadas por defecto</div>
+                <div className="text-xs text-muted-foreground">
+                  {pushEnabled ? "Activadas" : "Desactivadas (Pulsa para activar)"}
+                </div>
               </div>
             </div>
-            <ChevronRight size={18} className="text-muted-foreground" />
-          </div>
+            
+            {/* Interruptor (Toggle) */}
+            <div className={`h-6 w-11 rounded-full p-1 transition-colors duration-300 ${pushEnabled ? 'bg-primary' : 'bg-white/10'}`}>
+              <div className={`h-4 w-4 rounded-full bg-white transition-transform duration-300 ${pushEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+            </div>
+          </button>
 
-          <div className="flex items-center justify-between rounded-[28px] bg-card p-5 hairline opacity-50 grayscale">
-            <div className="flex items-center gap-3">
-              <div className="grid h-10 w-10 place-items-center rounded-full bg-white/5">
-                <Shield size={18} />
-              </div>
-              <div>
-                <div className="text-sm font-medium">Privacidad</div>
-                <div className="text-xs text-muted-foreground">Grupo privado</div>
-              </div>
-            </div>
-            <ChevronRight size={18} className="text-muted-foreground" />
-          </div>
         </div>
 
         {/* --- Save --- */}

@@ -72,17 +72,7 @@ function Notifs() {
           Lo que pasa mientras no miras el teléfono.
         </p>
 
-        <div
-          className="mt-6 flex items-center gap-3 rounded-3xl p-4 text-white"
-          style={{ background: "var(--gradient-party)" }}
-        >
-          <Sparkles size={20} />
-          <div className="flex-1 text-sm">
-            <div className="font-medium">3 retos esperan validación</div>
-            <div className="text-xs text-white/70">Envíaselos al admin</div>
-          </div>
-          <span className="text-lg">›</span>
-        </div>
+        
 
         {isLoading ? (
           <div className="mt-5 text-center text-sm text-muted-foreground">Cargando...</div>
