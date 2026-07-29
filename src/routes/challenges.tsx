@@ -164,7 +164,7 @@ function Challenges() {
                         >
                           Nivel {c.level}
                         </span>
-                        <span className="text-xs text-muted-foreground">+{c.points} pts</span>
+                        <span className="text-xs text-muted-foreground">+{c.points} pts, +{c.points} cr</span>
                       </div>
                       <div className="mt-3 text-lg font-medium">{c.title}</div>
                       <div className="mt-1 text-sm text-muted-foreground">{c.description}</div>
@@ -194,7 +194,7 @@ function Challenges() {
             disabled={rerolling !== null}
             className="mt-6 glass flex w-full items-center justify-center gap-2 rounded-3xl py-4 text-sm disabled:opacity-50"
           >
-            <Dices size={16} /> {rerolling ? "Cambiando reto..." : "Re-roll reto activo · 80 pts"}
+            <Dices size={16} /> {rerolling ? "Cambiando reto..." : "Re-roll reto activo · 80 cr"}
           </button>
         )}
 

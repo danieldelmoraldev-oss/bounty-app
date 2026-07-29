@@ -88,7 +88,7 @@ function Shop() {
           </div>
           <div className="glass flex items-center gap-2 rounded-full px-3.5 py-2 border border-white/10">
             <Gem size={14} className="text-primary animate-pulse" />
-            <span className="text-sm font-medium tabular-nums">{memberBalance} pts</span>
+            <span className="text-sm font-medium tabular-nums">{memberBalance} cr</span>
           </div>
         </div>
 
@@ -159,7 +159,7 @@ function Shop() {
                     <div className={`text-sm font-semibold tabular-nums ${isLocked ? "text-muted-foreground" : "text-primary"}`}>
                       {it.price}
                     </div>
-                    <div className="text-[9px] uppercase tracking-widest text-muted-foreground">pts</div>
+                    <div className="text-[9px] uppercase tracking-widest text-muted-foreground">cr</div>
                   </div>
                 </div>
               );
@@ -192,7 +192,7 @@ function Shop() {
               
               <div className="mt-6 inline-flex items-center gap-2 rounded-2xl border border-white/5 bg-white/5 px-4 py-2">
                 <span className="text-xs text-muted-foreground">Precio:</span>
-                <span className="text-base font-bold text-primary">{selectedItem.price} pts</span>
+                <span className="text-base font-bold text-primary">{selectedItem.price} cr</span>
               </div>
             </div>
 
