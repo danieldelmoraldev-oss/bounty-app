@@ -60,7 +60,7 @@ function LobbyPage() {
             misGrupos.map((group) => (
               <button
                 key={group.groupCode}
-                onClick={() => handleEnterGroup(group.groupCode, group.groupId, group.memberName, group.memberAvatar)}
+                onClick={() => handleEnterGroup(group.groupCode, group.memberId, group.memberName, group.memberAvatar)}
                 className="w-full flex items-center justify-between rounded-[24px] bg-white/5 p-4 text-left hairline transition hover:bg-white/10 active:scale-95"
               >
                 <div className="flex items-center gap-4">

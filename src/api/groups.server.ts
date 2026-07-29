@@ -415,8 +415,9 @@ export const getUserGroups = createServerFn({ method: "GET" })
       if (group) {
         groupsList.push({
           groupId: group._id.toString(),
+          memberId: member._id.toString(), // <--- AÑADIR ESTA LÍNEA VITAL
           groupCode: group.code,
-          groupName: group.name, // El nombre de la fiesta ("Los Descarriados", etc)
+          groupName: group.name,
           memberName: member.name,
           memberAvatar: member.avatar,
         });
