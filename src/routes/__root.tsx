@@ -8,6 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import OneSignal from 'react-onesignal';
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -142,6 +143,22 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  // --- INICIO DE ONESIGNAL ---
+  useEffect(() => {
+    const runOneSignal = async () => {
+      await OneSignal.init({
+        appId: "86c33f1d-ffe5-41bf-9d2c-73b265307954", // Tu App ID
+        allowLocalhostAsSecureOrigin: true,
+      });
+      
+      // Esto lanza la petición de permiso al usuario
+      OneSignal.Slidedown.promptPush();
+    };
+    
+    runOneSignal();
+  }, []);
+  // --- FIN DE ONESIGNAL ---
 
   return (
     <QueryClientProvider client={queryClient}>
