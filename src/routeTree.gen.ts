@@ -18,6 +18,7 @@ import { Route as ChallengeDetailRouteImport } from './routes/challenge-detail'
 import { Route as ChallengesRouteImport } from './routes/challenges'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as JoinRouteImport } from './routes/join'
+import { Route as LobbyRouteImport } from './routes/lobby'
 import { Route as NightRecapRouteImport } from './routes/night-recap'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as PartyRouteImport } from './routes/party'
@@ -72,6 +73,11 @@ const DashboardRoute = DashboardRouteImport.update({
 const JoinRoute = JoinRouteImport.update({
   id: '/join',
   path: '/join',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LobbyRoute = LobbyRouteImport.update({
+  id: '/lobby',
+  path: '/lobby',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NightRecapRoute = NightRecapRouteImport.update({
@@ -135,6 +141,7 @@ export interface FileRoutesByFullPath {
   '/challenges': typeof ChallengesRoute
   '/dashboard': typeof DashboardRoute
   '/join': typeof JoinRoute
+  '/lobby': typeof LobbyRoute
   '/night-recap': typeof NightRecapRoute
   '/notifications': typeof NotificationsRoute
   '/party': typeof PartyRoute
@@ -156,6 +163,7 @@ export interface FileRoutesByTo {
   '/challenges': typeof ChallengesRoute
   '/dashboard': typeof DashboardRoute
   '/join': typeof JoinRoute
+  '/lobby': typeof LobbyRoute
   '/night-recap': typeof NightRecapRoute
   '/notifications': typeof NotificationsRoute
   '/party': typeof PartyRoute
@@ -178,6 +186,7 @@ export interface FileRoutesById {
   '/challenges': typeof ChallengesRoute
   '/dashboard': typeof DashboardRoute
   '/join': typeof JoinRoute
+  '/lobby': typeof LobbyRoute
   '/night-recap': typeof NightRecapRoute
   '/notifications': typeof NotificationsRoute
   '/party': typeof PartyRoute
@@ -201,6 +210,7 @@ export interface FileRouteTypes {
     | '/challenges'
     | '/dashboard'
     | '/join'
+    | '/lobby'
     | '/night-recap'
     | '/notifications'
     | '/party'
@@ -222,6 +232,7 @@ export interface FileRouteTypes {
     | '/challenges'
     | '/dashboard'
     | '/join'
+    | '/lobby'
     | '/night-recap'
     | '/notifications'
     | '/party'
@@ -243,6 +254,7 @@ export interface FileRouteTypes {
     | '/challenges'
     | '/dashboard'
     | '/join'
+    | '/lobby'
     | '/night-recap'
     | '/notifications'
     | '/party'
@@ -265,6 +277,7 @@ export interface RootRouteChildren {
   ChallengesRoute: typeof ChallengesRoute
   DashboardRoute: typeof DashboardRoute
   JoinRoute: typeof JoinRoute
+  LobbyRoute: typeof LobbyRoute
   NightRecapRoute: typeof NightRecapRoute
   NotificationsRoute: typeof NotificationsRoute
   PartyRoute: typeof PartyRoute
@@ -340,6 +353,13 @@ declare module '@tanstack/react-router' {
       path: '/join'
       fullPath: '/join'
       preLoaderRoute: typeof JoinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lobby': {
+      id: '/lobby'
+      path: '/lobby'
+      fullPath: '/lobby'
+      preLoaderRoute: typeof LobbyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/night-recap': {
@@ -425,6 +445,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChallengesRoute: ChallengesRoute,
   DashboardRoute: DashboardRoute,
   JoinRoute: JoinRoute,
+  LobbyRoute: LobbyRoute,
   NightRecapRoute: NightRecapRoute,
   NotificationsRoute: NotificationsRoute,
   PartyRoute: PartyRoute,

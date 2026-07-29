@@ -22,10 +22,16 @@ function Landing() {
   const [adminName, setAdminName] = useState("");
   const [error, setError] = useState("");
 
-  // AUTO-LOGIN: Si abres la app y tienes sesión activa, ¡al dashboard directo!
+  // AUTO-LOGIN Y LOBBY: Comprueba la cuenta y la sala
   useEffect(() => {
-    if (isAuthenticated() && isInGroup()) {
-      navigate({ to: "/dashboard", replace: true });
+    if (isAuthenticated()) {
+      if (isInGroup()) {
+        // Tiene cuenta y sala seleccionada -> Al dashboard
+        navigate({ to: "/dashboard", replace: true });
+      } else {
+        // Tiene cuenta pero NO sala -> Al lobby a elegir
+        navigate({ to: "/lobby", replace: true });
+      }
     }
   }, [navigate]);
 

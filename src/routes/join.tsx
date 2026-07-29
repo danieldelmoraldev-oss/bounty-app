@@ -4,6 +4,9 @@ import { TopBar } from "@/components/TopBar";
 import { getRandomAvatarWithColor, avatarOptions, type AvatarOption } from "@/data/avatars";
 import { useState } from "react";
 import { Camera, ArrowRight, Users } from "lucide-react";
+import { getStoredUserId, setAuth } from "@/hooks/use-auth";
+import { useMutation } from "@tanstack/react-query";
+import { createGroup, joinGroup } from "@/api/groups.server";
 
 export const Route = createFileRoute("/join")({
   head: () => ({
@@ -25,28 +28,79 @@ function Join() {
   const [code, setCode] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState<AvatarOption | null>(null);
 
+  const createMutation = useMutation({
+    mutationFn: (data: any) => createGroup({ data }),
+    onSuccess: (res: any) => {
+      // Extraemos los datos con seguridad (formato nuevo o antiguo)
+      const mId = res.memberId || res.member?.id;
+      const gCode = res.groupCode || res.group?.code;
+      const mName = res.memberName || res.member?.name;
+      const mAvatar = res.memberAvatar || res.member?.avatar;
+      
+      setAuth(mId, gCode, mName, mAvatar);
+      navigate({ to: "/dashboard" });
+    },
+    onError: (err: any) => alert(err.message)
+  });
+
+  const joinMutation = useMutation({
+    mutationFn: (data: any) => joinGroup({ data }),
+    onSuccess: (res: any) => {
+      const mId = res.memberId || res.member?.id;
+      const gCode = res.groupCode || res.group?.code;
+      const mName = res.memberName || res.member?.name;
+      const mAvatar = res.memberAvatar || res.member?.avatar;
+      
+      setAuth(mId, gCode, mName, mAvatar);
+      navigate({ to: "/dashboard" });
+    },
+    onError: (err: any) => alert(err.message)
+  });
+
   const handleCreate = () => {
     if (!groupName.trim() || !playerName.trim()) return;
-    localStorage.setItem("bounty_temp_name", playerName.trim());
-    if (selectedAvatar) localStorage.setItem("bounty_temp_avatar", selectedAvatar.emoji);
-    
-    // Le pasamos code: undefined para que TypeScript valide la ruta perfecta
-    navigate({ 
-      to: "/auth", 
-      search: { groupName: groupName.trim(), action: "create", code: undefined } 
-    });
+
+    const userId = getStoredUserId();
+    if (userId) {
+      // MODO VIP: Ya está logueado, crea el grupo directo en la Base de Datos
+      createMutation.mutate({
+        name: groupName.trim(),
+        adminName: playerName.trim(),
+        userId: userId,
+        avatar: selectedAvatar?.emoji
+      });
+    } else {
+      // MODO INVITADO: No está logueado, lo mandamos a auth
+      localStorage.setItem("bounty_temp_name", playerName.trim());
+      if (selectedAvatar) localStorage.setItem("bounty_temp_avatar", selectedAvatar.emoji);
+      navigate({
+        to: "/auth",
+        search: { groupName: groupName.trim(), action: "create", code: undefined }
+      });
+    }
   };
 
   const handleJoin = () => {
     if (!code.trim() || !playerName.trim()) return;
-    localStorage.setItem("bounty_temp_name", playerName.trim());
-    if (selectedAvatar) localStorage.setItem("bounty_temp_avatar", selectedAvatar.emoji);
-    
-    // Le pasamos groupName: undefined para que TypeScript valide la ruta perfecta
-    navigate({ 
-      to: "/auth", 
-      search: { code: code.toUpperCase(), action: "join", groupName: undefined } 
-    });
+
+    const userId = getStoredUserId();
+    if (userId) {
+      // MODO VIP: Ya está logueado, se une directo a la sala
+      joinMutation.mutate({
+        code: code.trim(),
+        name: playerName.trim(),
+        userId: userId,
+        avatar: selectedAvatar?.emoji
+      });
+    } else {
+      // MODO INVITADO: No está logueado, lo mandamos a auth
+      localStorage.setItem("bounty_temp_name", playerName.trim());
+      if (selectedAvatar) localStorage.setItem("bounty_temp_avatar", selectedAvatar.emoji);
+      navigate({
+        to: "/auth",
+        search: { action: "join", code: code.trim(), groupName: undefined }
+      });
+    }
   };
 
   const pickRandomAvatar = () => {

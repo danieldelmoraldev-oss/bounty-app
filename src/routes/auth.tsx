@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { loginUser, registerUser } from "@/api/auth.server";
 import { createGroup, joinGroup } from "@/api/groups.server"; 
-import { setGlobalAuth, setAuth } from "@/hooks/use-auth"; 
+import { setGlobalAuth, setAuth, clearActiveGroup } from "@/hooks/use-auth"; 
 import { ArrowLeft, Mail, Lock, User as UserIcon } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
@@ -32,7 +32,7 @@ function AuthRoute() {
   const [error, setError] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleAuthSuccess = async (data: any) => {
+ const handleAuthSuccess = async (data: any) => {
     setIsProcessing(true);
     setGlobalAuth(data.token, data.user.id);
 
@@ -41,27 +41,44 @@ function AuthRoute() {
     
     try {
       if (action === "login") {
-        // Recuperación Mágica: Si el servidor nos devuelve info del grupo, entramos directo
-        if (data.groupInfo) {
-          setAuth(data.groupInfo.memberId, data.groupInfo.groupCode, data.groupInfo.memberName, data.groupInfo.memberAvatar);
+        // NUEVO: Si tiene exactamente 1 grupo, entramos directo (Efecto Instagram)
+        if (data.groupsList && data.groupsList.length === 1) {
+          const group = data.groupsList[0];
+          setAuth(group.memberId, group.groupCode, group.memberName, group.memberAvatar);
           navigate({ to: "/dashboard" });
         } else {
-          // Si está logueado pero no tiene grupo, le mandamos a meter el código
-          navigate({ to: "/" });
+          // NUEVO: Si tiene varios grupos (o ninguno), borramos el grupo activo y vamos al Lobby
+          clearActiveGroup();
+          navigate({ to: "/lobby" });
         }
       } 
       else if (action === "create" && groupName) {
-        const res = await createGroup({ 
+        // Ponemos ': any' para que TypeScript no se queje por el cambio de estructura
+        const res: any = await createGroup({ 
           data: { name: groupName, adminName: tempName, userId: data.user.id, avatar: tempAvatar } 
         });
-        setAuth(res.member.id, res.group.code, res.member.name, res.member.avatar);
+        
+        // Saca los datos buscando primero la estructura nueva, y si no, la antigua
+        const mId = res.memberId || res.member?.id;
+        const gCode = res.groupCode || res.group?.code;
+        const mName = res.memberName || res.member?.name;
+        const mAvatar = res.memberAvatar || res.member?.avatar;
+
+        setAuth(mId, gCode, mName, mAvatar);
         navigate({ to: "/dashboard" });
       } 
       else if (action === "join" && code) {
-        const res = await joinGroup({ 
+        // Lo mismo aquí para unirse
+        const res: any = await joinGroup({ 
           data: { code, name: tempName, userId: data.user.id, avatar: tempAvatar } 
         });
-        setAuth(res.member.id, res.group.code, res.member.name, res.member.avatar);
+        
+        const mId = res.memberId || res.member?.id;
+        const gCode = res.groupCode || res.group?.code;
+        const mName = res.memberName || res.member?.name;
+        const mAvatar = res.memberAvatar || res.member?.avatar;
+
+        setAuth(mId, gCode, mName, mAvatar);
         navigate({ to: "/dashboard" });
       }
     } catch (e: any) {

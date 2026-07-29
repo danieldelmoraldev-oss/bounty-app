@@ -32,7 +32,10 @@ export const registerUser = createServerFn({ method: "POST" })
     );
 
     return { 
-      success: true, token, user: { id: newUser._id.toString(), name: newUser.name, email: newUser.email }, groupInfo: null 
+      success: true, 
+      token, 
+      user: { id: newUser._id.toString(), name: newUser.name, email: newUser.email }, 
+      groupsList: [] // <-- Cambiado de groupInfo: null a un array vacío
     };
   });
 
@@ -53,18 +56,24 @@ export const loginUser = createServerFn({ method: "POST" })
       { expiresIn: "30d" }
     );
 
-    // NUEVO: Buscamos si este usuario ya pertenece a una sala
-    const member = await Member.findOne({ userId: user._id });
-    let groupInfo = null;
-    if (member) {
-      const group = await Group.findById(member.groupId);
-      if (group) {
-        groupInfo = {
-          memberId: member._id.toString(),
-          groupCode: group.code,
-          memberName: member.name,
-          memberAvatar: member.avatar
-        };
+    // NUEVO FLUJO: Buscamos TODOS los grupos a los que pertenece el usuario
+    const members = await Member.find({ userId: user._id });
+    const groupsList = [];
+    
+    // Recorremos cada perfil de miembro que tiene el usuario
+    if (members && members.length > 0) {
+      for (const member of members) {
+        const group = await Group.findById(member.groupId);
+        if (group) {
+          groupsList.push({
+            groupId: group._id.toString(), // <-- Añadido: vital para que el frontend sepa a dónde navegar
+            memberId: member._id.toString(),
+            groupCode: group.code,
+            // groupName: group.name, <-- Descomenta esto si tu modelo Group tiene un campo 'name' para pintarlo en el Lobby
+            memberName: member.name,
+            memberAvatar: member.avatar
+          });
+        }
       }
     }
 
@@ -72,6 +81,6 @@ export const loginUser = createServerFn({ method: "POST" })
       success: true, 
       token, 
       user: { id: user._id.toString(), name: user.name, email: user.email, avatar: user.avatar },
-      groupInfo // Se lo devolvemos al frontend
+      groupsList // <-- Devolvemos el array entero al frontend
     };
   });

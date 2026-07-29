@@ -131,6 +131,25 @@ export const joinGroup = createServerFn({ method: "POST" })
     if (!group) {
       throw new Error("Código de grupo no válido");
     }
+    // SI EL USUARIO YA ESTÁ LOGUEADO: comprobamos si ya estaba en esta sala
+      if (data.userId) {
+        const existingMember = await Member.findOne({
+          groupId: group._id,
+          userId: data.userId,
+        });
+
+        // Si ya existía, devolvemos su entrada sin duplicar el perfil
+        if (existingMember) {
+          return {
+            success: true,
+            groupId: group._id.toString(),
+            groupCode: group.code,
+            memberId: existingMember._id.toString(),
+            memberName: existingMember.name,
+            memberAvatar: existingMember.avatar,
+          };
+        }
+      }
 
     const season = await Season.findOne({ groupId: group._id, isActive: true });
     if (!season) {
@@ -377,4 +396,32 @@ export const endNight = createServerFn({ method: "POST" })
     await Notification.insertMany(notificationsToInsert);
 
     return { success: true, eventId: activeEvent._id.toString() };
+  });
+  // OBTENER TODOS LOS GRUPOS DE UN USUARIO (Para el Lobby)
+export const getUserGroups = createServerFn({ method: "GET" })
+  .validator((data: { userId: string }) => data)
+  .handler(async ({ data }) => {
+    await connectDB();
+
+    // 1. Buscamos todos los perfiles "Member" asociados a esta cuenta
+    const members = await Member.find({ userId: data.userId });
+    if (!members || members.length === 0) return [];
+
+    const groupsList = [];
+
+    // 2. Por cada perfil, buscamos los datos reales de la sala (nombre, código, etc.)
+    for (const member of members) {
+      const group = await Group.findById(member.groupId);
+      if (group) {
+        groupsList.push({
+          groupId: group._id.toString(),
+          groupCode: group.code,
+          groupName: group.name, // El nombre de la fiesta ("Los Descarriados", etc)
+          memberName: member.name,
+          memberAvatar: member.avatar,
+        });
+      }
+    }
+
+    return groupsList; // Devolvemos el array listo para pintar
   });

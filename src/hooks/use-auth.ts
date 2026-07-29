@@ -71,3 +71,11 @@ export function isAuthenticated(): boolean {
 export function isInGroup(): boolean {
   return !!getStoredMemberId() && !!getStoredGroupCode();
 }
+// NUEVO: Limpia solo los datos de la sala actual (Efecto Instagram)
+export function clearActiveGroup() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(MEMBER_ID_KEY);
+  localStorage.removeItem(GROUP_CODE_KEY);
+  localStorage.removeItem(MEMBER_NAME_KEY);
+  localStorage.removeItem(MEMBER_AVATAR_KEY);
+}

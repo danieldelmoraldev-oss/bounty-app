@@ -2,10 +2,10 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { TopBar } from "@/components/TopBar";
 import { FloatingNav } from "@/components/FloatingNav";
-import { getStoredAvatar, getStoredMemberName, getStoredMemberId, getStoredGroupCode, setAuth, clearAuth } from "@/hooks/use-auth";
+import { getStoredAvatar, getStoredMemberName, getStoredMemberId, getStoredGroupCode, setAuth, clearAuth, clearActiveGroup } from "@/hooks/use-auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { User, Bell, Shield, LogOut, ChevronRight, Camera, Copy, Check, Crown, Award, Loader2 } from "lucide-react";
+import { User, Bell, Shield, LogOut, ChevronRight, Camera, Copy, Check, Crown, Award, Loader2, Users } from "lucide-react";
 import QRCode from "react-qr-code";
 import { avatarOptions, type AvatarOption } from "@/data/avatars";
 import { getMemberProfile, updateProfile } from "@/api/members.server";
@@ -100,6 +100,11 @@ function SettingsPage() {
   const handleLogout = () => {
     clearAuth();
     navigate({ to: "/" });
+  };
+
+  const handleSwitchGroup = () => {
+    clearActiveGroup(); 
+    navigate({ to: "/" }); 
   };
 
   // Limpiamos duplicados en los arrays por si acaso
@@ -287,12 +292,20 @@ function SettingsPage() {
           {updateMutation.isPending ? "Guardando equipo..." : "Guardar cambios"}
         </button>
 
+        {/* --- Cambiar de Grupo --- */}
+        <button
+          onClick={handleSwitchGroup}
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-white/5 py-4 text-sm font-medium text-white transition hover:bg-white/10 active:scale-95 hairline"
+        >
+          <Users size={16} /> Cambiar de grupo
+        </button>
+
         {/* --- Logout --- */}
         <button
           onClick={handleLogout}
           className="mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-destructive/10 py-4 text-sm font-medium text-destructive transition active:scale-95"
         >
-          <LogOut size={16} /> Cerrar sesión
+          <LogOut size={16} /> Cerrar sesión total
         </button>
       </div>
       <FloatingNav />
